@@ -45,7 +45,13 @@ export function AuthProvider({ children }) {
         if (!supabase) return { error: { message: "Missing Supabase frontend env variables" } };
         return supabase.auth.signInWithPassword({ email, password });
       },
-      logout: () => (supabase ? supabase.auth.signOut() : Promise.resolve()),
+      logout: async () => {
+        setSession(null);
+        setUser(null);
+        setApiToken(null);
+        if (!supabase) return { error: null };
+        return supabase.auth.signOut();
+      },
     }),
     [session, user, loading]
   );
