@@ -7,6 +7,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (user?.role === "Admin") return <Navigate to="/admin" replace />;
   if (user?.role === "Intern") return <Navigate to="/intern" replace />;
@@ -14,8 +15,12 @@ export default function LoginPage() {
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
+    setIsSubmitting(true);
     const { error: signInError } = await login(email, password);
-    if (signInError) setError(signInError.message);
+    if (signInError) {
+      setError(signInError.message);
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -34,6 +39,7 @@ export default function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           type="email"
           className="input field-animate"
+          disabled={isSubmitting}
           required
         />
         <label className="field-label mt-4">Password</label>
@@ -42,9 +48,12 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           type="password"
           className="input field-animate"
+          disabled={isSubmitting}
           required
         />
-        <button className="btn-primary btn-premium mt-6 w-full">Login</button>
+        <button className="btn-primary btn-premium mt-6 w-full" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Logging in..." : "Login"}
+        </button>
         <p className="mt-4 text-sm" style={{ color: "var(--text-muted)" }}>
           New intern?{" "}
           <Link to="/register" className="font-medium" style={{ color: "var(--text)" }}>

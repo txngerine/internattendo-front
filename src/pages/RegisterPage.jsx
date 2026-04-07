@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (user?.role === "Admin") return <Navigate to="/admin" replace />;
   if (user?.role === "Intern") return <Navigate to="/intern" replace />;
@@ -19,12 +20,14 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setIsSubmitting(true);
     try {
       const { data } = await api.post("/public/register", { fullName, email, password });
       setSuccess(data.message || "Account created");
       setTimeout(() => navigate("/login"), 1200);
     } catch (err) {
       setError(err?.response?.data?.message || "Registration failed");
+      setIsSubmitting(false);
     }
   }
 
@@ -45,6 +48,7 @@ export default function RegisterPage() {
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           className="input field-animate"
+          disabled={isSubmitting}
           required
         />
 
@@ -54,6 +58,7 @@ export default function RegisterPage() {
           onChange={(e) => setEmail(e.target.value)}
           type="email"
           className="input field-animate"
+          disabled={isSubmitting}
           required
         />
 
@@ -64,10 +69,13 @@ export default function RegisterPage() {
           type="password"
           minLength={6}
           className="input field-animate"
+          disabled={isSubmitting}
           required
         />
 
-        <button className="btn-primary btn-premium mt-6 w-full">Register</button>
+        <button className="btn-primary btn-premium mt-6 w-full" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating account..." : "Register"}
+        </button>
         <p className="mt-4 text-sm" style={{ color: "var(--text-muted)" }}>
           Already have an account?{" "}
           <Link to="/login" className="font-medium" style={{ color: "var(--text)" }}>
