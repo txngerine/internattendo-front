@@ -1,0 +1,190 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--bg: #f5f7fa;
+		--bg-soft: #eef2f6;
+		--surface: #ffffff;
+		--surface-soft: #f8fafc;
+		--border: #d7dee7;
+		--border-strong: #c3ccd8;
+		--text: #122033;
+		--text-muted: #58657a;
+		--primary: #0f172a;
+		--primary-soft: #1f2937;
+		--focus: #b6c6dd;
+	}
+
+	body {
+		@apply antialiased;
+		margin: 0;
+		min-height: 100vh;
+		color: var(--text);
+		font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+		background:
+			radial-gradient(circle at 20% 15%, #ffffff 0%, transparent 38%),
+			radial-gradient(circle at 90% 5%, #edf2f8 0%, transparent 30%),
+			var(--bg);
+	}
+
+	#root {
+		min-height: 100vh;
+	}
+}
+
+@layer components {
+	.app-shell {
+		@apply min-h-screen p-4 md:p-6;
+	}
+
+	.app-container {
+		@apply mx-auto w-full max-w-7xl;
+	}
+
+	.card {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		@apply rounded-2xl shadow-sm;
+	}
+
+	.card-soft {
+		background: var(--surface-soft);
+		border: 1px solid var(--border);
+		@apply rounded-2xl;
+	}
+
+	.app-title {
+		@apply text-2xl md:text-3xl font-semibold tracking-tight;
+		color: var(--text);
+	}
+
+	.app-subtitle {
+		@apply text-sm;
+		color: var(--text-muted);
+	}
+
+	.field-label {
+		@apply block text-sm font-medium;
+		color: var(--text);
+	}
+
+	.input {
+		@apply mt-1 w-full rounded-xl px-3 py-2.5 text-sm outline-none transition;
+		border: 1px solid var(--border-strong);
+		background: var(--surface);
+	}
+
+	.input:focus {
+		border-color: var(--focus);
+		box-shadow: 0 0 0 3px rgba(182, 198, 221, 0.35);
+	}
+
+	.btn-primary {
+		@apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition;
+		background: var(--primary);
+	}
+
+	.btn-primary:hover {
+		background: var(--primary-soft);
+	}
+
+	.btn-secondary {
+		@apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition;
+		border: 1px solid var(--border-strong);
+		background: var(--surface);
+		color: var(--text);
+	}
+
+	.btn-secondary:hover {
+		background: #f2f6fb;
+	}
+
+	.notice-error {
+		@apply mt-3 rounded-xl px-3 py-2 text-sm;
+		color: #8c2c2c;
+		background: #fff3f3;
+		border: 1px solid #f5cccc;
+	}
+
+	.notice-success {
+		@apply mt-3 rounded-xl px-3 py-2 text-sm;
+		color: #1f5f40;
+		background: #f1fbf4;
+		border: 1px solid #ccefd7;
+	}
+
+	.auth-stage {
+		@apply relative overflow-hidden;
+		background:
+			radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.95) 0%, transparent 34%),
+			radial-gradient(circle at 90% 10%, rgba(220, 229, 241, 0.8) 0%, transparent 30%),
+			var(--bg);
+	}
+
+	.auth-form {
+		animation: riseIn 620ms cubic-bezier(0.2, 0.9, 0.28, 1) both;
+	}
+
+	.auth-orb {
+		@apply pointer-events-none absolute rounded-full;
+		filter: blur(1px);
+		opacity: 0.8;
+		animation: floatDrift 9s ease-in-out infinite;
+	}
+
+	.auth-orb-slow {
+		animation-duration: 13s;
+	}
+
+	.btn-premium {
+		@apply relative overflow-hidden;
+	}
+
+	.btn-premium::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.28) 50%, transparent 65%);
+		transform: translateX(-120%);
+		transition: transform 520ms ease;
+	}
+
+	.btn-premium:hover::after {
+		transform: translateX(120%);
+	}
+
+	.field-animate {
+		transition: transform 180ms ease, box-shadow 220ms ease;
+	}
+
+	.field-animate:focus {
+		transform: translateY(-1px);
+	}
+}
+
+@keyframes riseIn {
+	from {
+		opacity: 0;
+		transform: translateY(16px) scale(0.985);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes floatDrift {
+	0% {
+		transform: translate3d(0, 0, 0);
+	}
+	50% {
+		transform: translate3d(0, -14px, 0);
+	}
+	100% {
+		transform: translate3d(0, 0, 0);
+	}
+}
