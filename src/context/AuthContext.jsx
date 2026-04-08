@@ -72,6 +72,33 @@ export function AuthProvider({ children }) {
       authMessage,
       loading,
       clearAuthMessage: () => setAuthMessage(""),
+      requestPasswordReset: async (email) => {
+        if (!supabase) return { error: { message: "Missing Supabase frontend env variables" } };
+        const normalizedEmail = String(email || "").trim();
+        if (!normalizedEmail) return { error: { message: "Email is required" } };
+
+        const redirectTo = `${window.location.origin}/reset-password`;
+        const result = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
+        if (result.error) {
+          return { error: { message: result.error.message || "Unable to send reset email" } };
+        }
+
+        return { error: null };
+      },
+      updatePassword: async (password) => {
+        if (!supabase) return { error: { message: "Missing Supabase frontend env variables" } };
+        const nextPassword = String(password || "");
+        if (nextPassword.length < 6) {
+          return { error: { message: "Password must be at least 6 characters" } };
+        }
+
+        const result = await supabase.auth.updateUser({ password: nextPassword });
+        if (result.error) {
+          return { error: { message: result.error.message || "Unable to reset password" } };
+        }
+
+        return { error: null };
+      },
       login: async (email, password) => {
         if (!supabase) return { error: { message: "Missing Supabase frontend env variables" } };
         setAuthMessage("");

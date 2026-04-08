@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function LoginPage() {
-  const { user, login, authMessage, clearAuthMessage } = useAuth();
+export default function ForgotPasswordPage() {
+  const { user, requestPasswordReset } = useAuth();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (user?.role === "Admin") return <Navigate to="/admin" replace />;
@@ -15,12 +15,17 @@ export default function LoginPage() {
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
-    clearAuthMessage();
+    setSuccess("");
     setIsSubmitting(true);
-    const { error: signInError } = await login(email, password);
-    if (signInError) {
-      setError(signInError.message);
+
+    const { error: resetError } = await requestPasswordReset(email);
+    if (resetError) {
+      setError(resetError.message || "Failed to send reset email");
+      setIsSubmitting(false);
+      return;
     }
+
+    setSuccess("Password reset link sent. Please check your email inbox.");
     setIsSubmitting(false);
   }
 
@@ -31,9 +36,12 @@ export default function LoginPage() {
       <div className="hidden sm:block auth-orb left-[24%] top-[-3rem] h-28 w-28 bg-slate-300/45" />
 
       <form onSubmit={onSubmit} className="card auth-form relative w-full max-w-sm mx-3 p-6 sm:p-7 md:p-8">
-        <h1 className="app-title text-xl sm:text-2xl md:text-[1.75rem]">Intern Attendance</h1>
-        <p className="app-subtitle mt-1 text-xs sm:text-sm">Sign in with your company credentials.</p>
-        {(error || authMessage) && <p className="notice-error">{error || authMessage}</p>}
+        <h1 className="app-title text-xl sm:text-2xl md:text-[1.75rem]">Forgot Password</h1>
+        <p className="app-subtitle mt-1 text-xs sm:text-sm">Enter your email to receive a reset link.</p>
+
+        {error && <p className="notice-error">{error}</p>}
+        {success && <p className="notice-success">{success}</p>}
+
         <label className="field-label mt-5">Email</label>
         <input
           value={email}
@@ -43,27 +51,15 @@ export default function LoginPage() {
           disabled={isSubmitting}
           required
         />
-        <label className="field-label mt-4">Password</label>
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-          className="input field-animate"
-          disabled={isSubmitting}
-          required
-        />
-        <div className="mt-3 text-right">
-          <Link to="/forgot-password" className="text-sm font-medium" style={{ color: "var(--text)" }}>
-            Forgot password?
-          </Link>
-        </div>
+
         <button className="btn-primary btn-premium mt-6 w-full" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Logging in..." : "Login"}
+          {isSubmitting ? "Sending..." : "Send Reset Link"}
         </button>
+
         <p className="mt-4 text-sm" style={{ color: "var(--text-muted)" }}>
-          New intern?{" "}
-          <Link to="/register" className="font-medium" style={{ color: "var(--text)" }}>
-            Create account
+          Remembered your password?{" "}
+          <Link to="/login" className="font-medium" style={{ color: "var(--text)" }}>
+            Back to login
           </Link>
         </p>
       </form>
