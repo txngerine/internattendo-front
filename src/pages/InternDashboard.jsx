@@ -74,6 +74,7 @@ export default function InternDashboard() {
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return "--";
     return parsed.toLocaleTimeString([], {
+      timeZone: "Asia/Kolkata",
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
