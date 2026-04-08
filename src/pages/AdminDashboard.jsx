@@ -80,6 +80,22 @@ function formatTimeOnly(value) {
   });
 }
 
+function formatTimeForInput(value) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(parsed);
+
+  const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${map.hour}:${map.minute}`;
+}
+
 function getIstTodayDate() {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kolkata",
@@ -106,7 +122,12 @@ export default function AdminDashboard() {
   const [editForm, setEditForm] = useState({ fullName: "", email: "", accessStatus: "pending" });
   const [deletingInternId, setDeletingInternId] = useState("");
   const [editingRecordId, setEditingRecordId] = useState("");
-  const [recordForm, setRecordForm] = useState({ status: "Present", workDescription: "" });
+  const [recordForm, setRecordForm] = useState({
+    status: "Present",
+    workDescription: "",
+    loginTime: "",
+    logoutTime: "",
+  });
   const [recordUpdatingId, setRecordUpdatingId] = useState("");
   const [deletingRecordId, setDeletingRecordId] = useState("");
   const [recordsMessage, setRecordsMessage] = useState("");
@@ -286,12 +307,19 @@ export default function AdminDashboard() {
     setRecordForm({
       status: record.status || "Present",
       workDescription: record.work_description || "",
+      loginTime: formatTimeForInput(record.login_time),
+      logoutTime: formatTimeForInput(record.logout_time),
     });
   }
 
   function cancelEditingRecord() {
     setEditingRecordId("");
-    setRecordForm({ status: "Present", workDescription: "" });
+    setRecordForm({
+      status: "Present",
+      workDescription: "",
+      loginTime: "",
+      logoutTime: "",
+    });
   }
 
   async function saveAttendanceRecord(recordId) {
@@ -302,6 +330,8 @@ export default function AdminDashboard() {
       const { data } = await api.patch(`/admin/attendance/${recordId}`, {
         status: recordForm.status,
         workDescription: recordForm.workDescription,
+        loginTime: recordForm.loginTime,
+        logoutTime: recordForm.logoutTime,
       });
 
       setRecords((current) =>
@@ -794,8 +824,32 @@ export default function AdminDashboard() {
                     <tr key={record.id} className="border-t transition hover:bg-slate-50/70" style={{ borderColor: "var(--border)" }}>
                       <td className="p-2">{record.profiles.full_name}</td>
                       <td className="p-2">{record.attendance_date}</td>
-                      <td className="p-2">{formatTimeOnly(record.login_time)}</td>
-                      <td className="p-2">{formatTimeOnly(record.logout_time)}</td>
+                      <td className="p-2">
+                        {isEditing ? (
+                          <input
+                            type="time"
+                            className="input mt-0"
+                            value={recordForm.loginTime}
+                            onChange={(e) => setRecordForm((current) => ({ ...current, loginTime: e.target.value }))}
+                            disabled={isUpdating}
+                          />
+                        ) : (
+                          formatTimeOnly(record.login_time)
+                        )}
+                      </td>
+                      <td className="p-2">
+                        {isEditing ? (
+                          <input
+                            type="time"
+                            className="input mt-0"
+                            value={recordForm.logoutTime}
+                            onChange={(e) => setRecordForm((current) => ({ ...current, logoutTime: e.target.value }))}
+                            disabled={isUpdating}
+                          />
+                        ) : (
+                          formatTimeOnly(record.logout_time)
+                        )}
+                      </td>
                       <td className="p-2">
                         {isEditing ? (
                           <select
