@@ -3,7 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
-  const { user, login } = useAuth();
+  const { user, login, authMessage, clearAuthMessage } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,24 +15,25 @@ export default function LoginPage() {
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
+    clearAuthMessage();
     setIsSubmitting(true);
     const { error: signInError } = await login(email, password);
     if (signInError) {
       setError(signInError.message);
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   }
 
   return (
-    <div className="app-shell auth-stage flex items-center justify-center">
-      <div className="auth-orb left-[-5rem] top-[10%] h-48 w-48 bg-white/70" />
-      <div className="auth-orb auth-orb-slow right-[-4rem] top-[62%] h-56 w-56 bg-slate-200/60" />
-      <div className="auth-orb left-[24%] top-[-3rem] h-28 w-28 bg-slate-300/45" />
+    <div className="app-shell auth-stage flex items-center justify-center overflow-hidden">
+      <div className="hidden sm:block auth-orb left-[-5rem] top-[10%] h-48 w-48 bg-white/70" />
+      <div className="hidden sm:block auth-orb auth-orb-slow right-[-4rem] top-[62%] h-56 w-56 bg-slate-200/60" />
+      <div className="hidden sm:block auth-orb left-[24%] top-[-3rem] h-28 w-28 bg-slate-300/45" />
 
-      <form onSubmit={onSubmit} className="card auth-form relative w-full max-w-md p-7 md:p-8">
-        <h1 className="app-title text-[1.75rem]">Intern Attendance</h1>
-        <p className="app-subtitle mt-1">Sign in with your company credentials.</p>
-        {error && <p className="notice-error">{error}</p>}
+      <form onSubmit={onSubmit} className="card auth-form relative w-full max-w-sm mx-3 p-6 sm:p-7 md:p-8">
+        <h1 className="app-title text-xl sm:text-2xl md:text-[1.75rem]">Intern Attendance</h1>
+        <p className="app-subtitle mt-1 text-xs sm:text-sm">Sign in with your company credentials.</p>
+        {(error || authMessage) && <p className="notice-error">{error || authMessage}</p>}
         <label className="field-label mt-5">Email</label>
         <input
           value={email}

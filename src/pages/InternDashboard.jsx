@@ -81,13 +81,13 @@ export default function InternDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-6 py-10 text-gray-900">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#f8fafc] px-3 sm:px-6 py-6 sm:py-10 text-gray-900">
+      <div className="max-w-2xl mx-auto space-y-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
               Intern Dashboard
             </h1>
             <p className="text-sm text-gray-500 mt-1">
@@ -97,7 +97,7 @@ export default function InternDashboard() {
 
           <button
             onClick={logout}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+            className="px-4 py-2 text-sm whitespace-nowrap rounded-lg border border-gray-300 hover:bg-gray-100 transition"
           >
             Logout
           </button>
@@ -115,7 +115,7 @@ export default function InternDashboard() {
           </div>
 
           {/* Time Blocks */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="border border-gray-200 rounded-xl p-4">
               <p className="text-xs text-gray-500">Login</p>
               <p className="text-sm font-medium mt-1">
@@ -145,7 +145,7 @@ export default function InternDashboard() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
 
             {!attendance && (
               <button

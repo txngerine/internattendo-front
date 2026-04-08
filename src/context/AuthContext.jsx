@@ -4,15 +4,32 @@ import { hasSupabaseConfig, supabase } from "../lib/supabase";
 
 const AuthContext = createContext(null);
 
+function toAuthError(error, fallbackMessage) {
+  return {
+    message: error?.response?.data?.message || error?.message || fallbackMessage,
+  };
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
+  const [authMessage, setAuthMessage] = useState("");
   const [loading, setLoading] = useState(hasSupabaseConfig);
 
   async function hydrate(accessToken) {
     setApiToken(accessToken);
-    const { data } = await api.get("/auth/me");
-    setUser(data.user);
+    try {
+      const { data } = await api.get("/auth/me");
+      setUser(data.user);
+      setAuthMessage("");
+      return { data: data.user, error: null };
+    } catch (error) {
+      const authError = toAuthError(error, "Login failed");
+      setApiToken(null);
+      setUser(null);
+      setAuthMessage(authError.message);
+      return { data: null, error: authError };
+    }
   }
 
   useEffect(() => {
@@ -20,14 +37,26 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(async ({ data }) => {
       const currentSession = data.session || null;
       setSession(currentSession);
-      if (currentSession?.access_token) await hydrate(currentSession.access_token);
+      if (currentSession?.access_token) {
+        const hydrated = await hydrate(currentSession.access_token);
+        if (hydrated.error) {
+          setSession(null);
+          await supabase.auth.signOut();
+        }
+      }
       setLoading(false);
     });
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
       setSession(currentSession || null);
-      if (currentSession?.access_token) await hydrate(currentSession.access_token);
+      if (currentSession?.access_token) {
+        const hydrated = await hydrate(currentSession.access_token);
+        if (hydrated.error) {
+          setSession(null);
+          await supabase.auth.signOut();
+        }
+      }
       else {
         setApiToken(null);
         setUser(null);
@@ -40,20 +69,35 @@ export function AuthProvider({ children }) {
     () => ({
       session,
       user,
+      authMessage,
       loading,
-      login: (email, password) => {
+      clearAuthMessage: () => setAuthMessage(""),
+      login: async (email, password) => {
         if (!supabase) return { error: { message: "Missing Supabase frontend env variables" } };
-        return supabase.auth.signInWithPassword({ email, password });
+        setAuthMessage("");
+        const result = await supabase.auth.signInWithPassword({ email, password });
+        if (result.error) return result;
+
+        if (result.data.session?.access_token) {
+          const hydrated = await hydrate(result.data.session.access_token);
+          if (hydrated.error) {
+            await supabase.auth.signOut();
+            return hydrated;
+          }
+        }
+
+        return { error: null };
       },
       logout: async () => {
         setSession(null);
         setUser(null);
         setApiToken(null);
+        setAuthMessage("");
         if (!supabase) return { error: null };
         return supabase.auth.signOut();
       },
     }),
-    [session, user, loading]
+    [session, user, authMessage, loading]
   );
 
   if (!hasSupabaseConfig) {
