@@ -8,6 +8,7 @@ export default function InternDashboard() {
   const [attendance, setAttendance] = useState(null);
   const [workDescription, setWorkDescription] = useState("");
   const [message, setMessage] = useState("");
+  const [canCheckOut, setCanCheckOut] = useState(true);
 
   async function loadToday() {
     const { data } = await api.get("/attendance/today");
@@ -19,6 +20,10 @@ export default function InternDashboard() {
   useEffect(() => {
     loadToday();
   }, []);
+
+  useEffect(() => {
+    setCanCheckOut(attendance && !attendance.logout_time);
+  }, [attendance]);
 
   async function getLocation() {
     return new Promise((resolve, reject) => {
@@ -41,6 +46,8 @@ export default function InternDashboard() {
         ...location,
       });
       setAttendance(data.attendance);
+      setCanCheckOut(false);
+      setTimeout(() => setCanCheckOut(true), 3600000); // Prevent accidental check-out for 1 hour
       setMessage("Checked in successfully.");
     } catch (err) {
       setMessage(err?.response?.data?.message || "Check-in failed");
@@ -160,7 +167,10 @@ export default function InternDashboard() {
             {attendance && !attendance.logout_time && (
               <button
                 onClick={handleCheckOut}
-                className="px-5 py-2.5 text-sm font-medium rounded-lg bg-gray-900 text-white hover:opacity-90 transition"
+                disabled={!canCheckOut}
+                className={`px-5 py-2.5 text-sm font-medium rounded-lg bg-gray-900 text-white transition ${
+                  canCheckOut ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'
+                }`}
               >
                 Check Out
               </button>
