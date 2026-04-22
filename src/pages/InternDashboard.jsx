@@ -157,14 +157,22 @@ export default function InternDashboard() {
               </button>
             )}
 
-            {attendance && !attendance.logout_time && (
-              <button
-                onClick={handleCheckOut}
-                className="px-5 py-2.5 text-sm font-medium rounded-lg bg-gray-900 text-white hover:opacity-90 transition"
-              >
-                Check Out
-              </button>
-            )}
+            {attendance && !attendance.logout_time && (() => {
+              // Calculate if 1 hour has passed since login_time
+              const loginTime = attendance?.login_time ? new Date(attendance.login_time) : null;
+              const now = new Date();
+              const oneHourPassed = loginTime && (now - loginTime) >= 60 * 60 * 1000;
+              return (
+                <button
+                  onClick={handleCheckOut}
+                  className="px-5 py-2.5 text-sm font-medium rounded-lg bg-gray-900 text-white hover:opacity-90 transition"
+                  disabled={!oneHourPassed}
+                  title={!oneHourPassed ? 'You can only check out after 1 hour from check-in.' : ''}
+                >
+                  Check Out
+                </button>
+              );
+            })()}
 
             {attendance && (
               <button
