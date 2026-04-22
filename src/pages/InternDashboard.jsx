@@ -8,7 +8,7 @@ export default function InternDashboard() {
   const [attendance, setAttendance] = useState(null);
   const [workDescription, setWorkDescription] = useState("");
   const [message, setMessage] = useState("");
-  const [canCheckOut, setCanCheckOut] = useState(true);
+
 
   async function loadToday() {
     const { data } = await api.get("/attendance/today");
@@ -21,9 +21,7 @@ export default function InternDashboard() {
     loadToday();
   }, []);
 
-  useEffect(() => {
-    setCanCheckOut(attendance && !attendance.logout_time);
-  }, [attendance]);
+
 
   async function getLocation() {
     return new Promise((resolve, reject) => {
@@ -46,8 +44,6 @@ export default function InternDashboard() {
         ...location,
       });
       setAttendance(data.attendance);
-      setCanCheckOut(false);
-      setTimeout(() => setCanCheckOut(true), 3600000); // Prevent accidental check-out for 1 hour
       setMessage("Checked in successfully.");
     } catch (err) {
       setMessage(err?.response?.data?.message || "Check-in failed");
@@ -55,6 +51,15 @@ export default function InternDashboard() {
   }
 
   async function handleCheckOut() {
+    // Check if 1 hour has passed since login_time
+    if (attendance?.login_time) {
+      const loginTime = new Date(attendance.login_time);
+      const now = new Date();
+      if (now - loginTime < 60 * 60 * 1000) {
+        setMessage("You can only check out after 1 hour from check-in.");
+        return;
+      }
+    }
     try {
       const { data } = await api.post("/attendance/check-out");
       setAttendance(data.attendance);
@@ -164,14 +169,21 @@ export default function InternDashboard() {
               </button>
             )}
 
-            {attendance && !attendance.logout_time && (
-              <button
-                onClick={handleCheckOut}
-                className="px-5 py-2.5 text-sm font-medium rounded-lg bg-gray-900 text-white hover:opacity-90 transition"
-              >
-                Check Out
-              </button>
-            )}
+            {attendance && !attendance.logout_time && (() => {
+              const loginTime = attendance?.login_time ? new Date(attendance.login_time) : null;
+              const now = new Date();
+              const oneHourPassed = loginTime && (now - loginTime) >= 60 * 60 * 1000;
+              return (
+                <button
+                  onClick={handleCheckOut}
+                  className="px-5 py-2.5 text-sm font-medium rounded-lg bg-gray-900 text-white hover:opacity-90 transition"
+                  disabled={!oneHourPassed}
+                  title={!oneHourPassed ? 'You can only check out after 1 hour from check-in.' : ''}
+                >
+                  Check Out
+                </button>
+              );
+            })()}
 
             {attendance && (
               <button
