@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import StatusBadge from "../components/StatusBadge";
+import { useGeolocation } from "../hooks/useGeolocation";
 
 export default function InternDashboard() {
   const { user, logout } = useAuth();
+  const { getLocation } = useGeolocation();
   const [attendance, setAttendance] = useState(null);
   const [workDescription, setWorkDescription] = useState("");
   const [message, setMessage] = useState("");
@@ -22,19 +24,6 @@ export default function InternDashboard() {
   }, []);
 
 
-
-  async function getLocation() {
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        (pos) =>
-          resolve({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          }),
-        reject
-      );
-    });
-  }
 
   async function handleCheckIn() {
     try {
